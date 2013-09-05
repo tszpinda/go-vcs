@@ -62,3 +62,15 @@ func (r *hgRepo) CheckOut(rev string) (dir string, err error) {
 		return "", fmt.Errorf("hg update -r %q failed: %s\n%s", rev, err, out)
 	}
 }
+
+func (r *hgRepo) Log(startRev, endRev string) ([]string, error) {
+	panic("not implemented")
+}
+
+func (r *hgRepo) HardReset() error {
+	panic("not implemented")
+}
+
+func (r *hgRepo) Pull() error {
+	panic("not implemented")
+}

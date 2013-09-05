@@ -62,3 +62,50 @@ func (r *gitRepo) CheckOut(rev string) (dir string, err error) {
 		return "", fmt.Errorf("git checkout %q failed: %s\n%s", rev, err, out)
 	}
 }
+
+func (r *gitRepo) Log(startRev, endRev string) ([]string, error) {
+	arg := startRev + ".." + endRev
+	cmd := exec.Command("git", "log", "--pretty=oneline", "--abbrev-commit", arg)
+	cmd.Dir = r.dir
+	if out, err := cmd.CombinedOutput(); err == nil {
+		log := string(out)
+		logs := strings.Split(log, "\n")
+		found := len(logs)
+		//check if last element was \n so it its empty
+		if found > 0 && logs[len(logs)-1] == "" {
+			//remove last one
+			logs = logs[:len(logs)-1]
+		}
+
+		return logs, nil
+	} else {
+		return nil, fmt.Errorf("git log --pretty=oneline --abbrev-commit %v..%v failed:\n error details:\n%s\n%s", startRev, endRev, err, out)
+	}
+}
+
+func (r *gitRepo) HardReset() error {
+	cmd := exec.Command("git", "fetch")
+	cmd.Dir = r.dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git fetch failed: %s\n%s", err, out)
+	}
+
+	cmd = exec.Command("git", "reset", "--hard", "origin/master")
+	cmd.Dir = r.dir
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git reset --hard origin/master: %s\n%s", err, out)
+	}
+	return nil
+}
+
+func (r *gitRepo) Pull() error {
+	cmd := exec.Command("git", "pull")
+	cmd.Dir = r.dir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git pull failed: %s\n%s", err, out)
+	}
+	return nil
+}

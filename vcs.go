@@ -28,6 +28,15 @@ type Repository interface {
 	// CheckOut returns the path of a directory containing a working tree at revision rev. CheckOut
 	// assumes that rev is local or has already been fetched; it does not update the repository.
 	CheckOut(rev string) (dir string, err error)
+
+	// Retruns list of logs from the commits between two revisions
+	Log(startRev, endRev string) ([]string, error)
+
+	//Hard rest
+	HardReset() error
+
+	//Pull
+	Pull() error
 }
 
 // Clones the VCS repository from a remote URL to dir.

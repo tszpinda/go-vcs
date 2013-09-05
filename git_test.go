@@ -1,10 +1,48 @@
 package vcs
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 )
+
+func TestLog(t *testing.T) {
+	t.Parallel()
+
+	url := "https://bitbucket.org/pawmar/golang_playground"
+	//tmpdir := "/Users/tszpinda/tmp/git-test"
+	var tmpdir string
+	tmpdir, err := ioutil.TempDir("", "go-vcs-TestGit")
+	if err != nil {
+		t.Fatalf("TempDir: %s", err)
+	}
+	tmpdir = "/Users/tszpinda/tmp/git-test"
+	//defer os.RemoveAll(tmpdir)
+
+	r, err := CloneOrOpen(Git, url, tmpdir)
+	if err != nil {
+		t.Fatalf("Error CloneOrOpen: %s", err)
+	}
+	fmt.Println("Checkout master")
+
+	masterDir, err := r.CheckOut("master")
+	if err != nil {
+		t.Fatalf("CheckOut master: %s", err)
+	}
+	fmt.Println("master dir", masterDir)
+
+	fmt.Println("Retrive logs")
+	r.Pull()
+	//in Git range is exclusive from bottom, inclusive from top
+	logs, _ := r.Log("2dbee0b", "33422dc")
+
+	if len(logs) != 3 {
+		fmt.Printf("Expected 3 but found: %v", len(logs))
+		t.Fail()
+	}
+
+}
 
 func TestGit(t *testing.T) {
 	t.Parallel()
