@@ -35,13 +35,40 @@ func TestLog(t *testing.T) {
 	fmt.Println("Retrive logs")
 	r.Pull()
 	//in Git range is exclusive from bottom, inclusive from top
-	logs, _ := r.Log("2dbee0b", "33422dc")
+	logs, err := r.Log("2dbee0b", "33422dc")
+	if err != nil {
+		t.Fatalf("Log error: %s", err)
+	}
 
 	if len(logs) != 3 {
 		fmt.Printf("Expected 3 but found: %v", len(logs))
 		t.Fail()
 	}
+	if logs[0].Hash != "33422dc" {
+		fmt.Println("Invalid hash")
+		t.Fail()
+	}
+	if logs[0].User != "Pawel Markowski" {
+		fmt.Println("Invalid hash")
+		t.Fail()
+	}
+	if logs[0].Message != "no staged" {
+		fmt.Println("Invalid hash")
+		t.Fail()
+	}
 
+	//invalid rev
+	logs, err = r.Log("2dbee0b", "33422dk")
+	if logs != nil {
+		t.Fatalf("Logs should be nil")
+	}
+	if err == nil {
+		t.Fatalf("Err should be not be empty")
+	}
+	expErr := fmt.Errorf("One or both revisions not found: '%v' - '%v'", "2dbee0b", "33422dk")
+	if err.Error() != expErr.Error() {
+		t.Fatalf("Err should be :'%v' but was: '%v'", expErr, err)
+	}
 }
 
 func TestGit(t *testing.T) {

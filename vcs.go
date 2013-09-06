@@ -2,6 +2,7 @@ package vcs
 
 import (
 	"os"
+	"time"
 )
 
 type VCS interface {
@@ -18,6 +19,13 @@ var VCSByName = map[string]VCS{
 	"hg":  Hg,
 }
 
+type Log struct {
+	Hash    string
+	User    string
+	Date    time.Time
+	Message string
+}
+
 type Repository interface {
 	Dir() string // The repository's root directory.
 	VCS() VCS
@@ -30,7 +38,7 @@ type Repository interface {
 	CheckOut(rev string) (dir string, err error)
 
 	// Retruns list of logs from the commits between two revisions
-	Log(startRev, endRev string) ([]string, error)
+	Log(startRev, endRev string) ([]Log, error)
 
 	//Hard rest
 	HardReset() error

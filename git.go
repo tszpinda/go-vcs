@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 type git struct {
@@ -63,23 +64,33 @@ func (r *gitRepo) CheckOut(rev string) (dir string, err error) {
 	}
 }
 
-func (r *gitRepo) Log(startRev, endRev string) ([]string, error) {
+func (r *gitRepo) Log(startRev, endRev string) ([]Log, error) {
 	arg := startRev + ".." + endRev
-	cmd := exec.Command("git", "log", "--pretty=oneline", "--abbrev-commit", arg)
+	cmd := exec.Command("git", "log", "--pretty=format:'%h|%an|%ad|%s'", "--date=short", arg)
 	cmd.Dir = r.dir
 	if out, err := cmd.CombinedOutput(); err == nil {
-		log := string(out)
-		logs := strings.Split(log, "\n")
-		found := len(logs)
+		commits := strings.Split(strings.Replace(string(out), "'", "", -1), "\n")
+		found := len(commits)
 		//check if last element was \n so it its empty
-		if found > 0 && logs[len(logs)-1] == "" {
+		if found > 0 && commits[len(commits)-1] == "" {
 			//remove last one
-			logs = logs[:len(logs)-1]
+			commits = commits[:len(commits)-1]
+		}
+
+		logs := make([]Log, len(commits))
+		for i, commit := range commits {
+			commitArr := strings.Split(commit, "|")
+			date, _ := time.Parse("2006-01-02", commitArr[2])
+			log := Log{commitArr[0], commitArr[1], date, commitArr[3]}
+			logs[i] = log
 		}
 
 		return logs, nil
 	} else {
-		return nil, fmt.Errorf("git log --pretty=oneline --abbrev-commit %v..%v failed:\n error details:\n%s\n%s", startRev, endRev, err, out)
+		if strings.Contains(string(out), "unknown revision") {
+			return nil, fmt.Errorf("One or both revisions not found: '%v' - '%v'", startRev, endRev)
+		}
+		return nil, fmt.Errorf("git log failed:\n error details:\n%s\n%s", startRev, endRev, err, out)
 	}
 }
 

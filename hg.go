@@ -63,7 +63,7 @@ func (r *hgRepo) CheckOut(rev string) (dir string, err error) {
 	}
 }
 
-func (r *hgRepo) Log(startRev, endRev string) ([]string, error) {
+func (r *hgRepo) Log(startRev, endRev string) ([]Log, error) {
 	panic("not implemented")
 }
 
