@@ -22,7 +22,7 @@ type gitRepo struct {
 func (git git) Clone(url, dir string) (Repository, error) {
 	r := &gitRepo{dir, &git}
 
-	cmd := exec.Command("git", "clone", "--bare", "--", url, dir)
+	cmd := exec.Command("git", "clone", "--", url, dir)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		if strings.Contains(string(out), fmt.Sprintf("fatal: destination path '%s' already exists", dir)) {
 			return nil, os.ErrExist
