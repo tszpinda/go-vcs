@@ -65,8 +65,19 @@ func (r *gitRepo) CheckOut(rev string) (dir string, err error) {
 }
 
 func (r *gitRepo) Log(startRev, endRev string) ([]Log, error) {
-	arg := startRev + ".." + endRev
-	cmd := exec.Command("git", "log", "--pretty=format:'%h|%an|%ad|%s'", "--date=short", arg)
+	arg := ""
+	if startRev != "" {
+		arg = startRev
+		if endRev != "" {
+			arg = startRev + ".." + endRev
+		}
+	}
+	var cmd *exec.Cmd
+	if arg == "" {
+		cmd = exec.Command("git", "log", "--pretty=format:'%h|%an|%ad|%s'", "--date=short")
+	} else {
+		cmd = exec.Command("git", "log", "--pretty=format:'%h|%an|%ad|%s'", "--date=short", arg)
+	}
 	cmd.Dir = r.dir
 	if out, err := cmd.CombinedOutput(); err == nil {
 		commits := strings.Split(strings.Replace(string(out), "'", "", -1), "\n")
